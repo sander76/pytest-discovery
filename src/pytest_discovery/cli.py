@@ -3,6 +3,7 @@
 import argparse
 import multiprocessing
 import signal
+import subprocess
 import sys
 from pathlib import Path
 
@@ -24,7 +25,13 @@ class TestCollectorPlugin:
 
 
 def run_pytest_collect(folder: Path, output_file: Path) -> None:
-    """Run pytest collection on the folder and write output to file."""
+    """Run pytest collection on the folder and write output to file.
+
+    Args:
+        folder: The folder to collect tests from.
+        output_file: The file to write collected test node IDs to.
+        venv_paths: Optional list of paths from local venv to add to sys.path.
+    """
     collector = TestCollectorPlugin()
 
     try:
@@ -44,6 +51,11 @@ def watch_folder(folder: str, output_dir: str) -> None:
     """Watch a folder for changes and run pytest collect on each change.
 
     This function is meant to run in a separate process.
+
+    Args:
+        folder: The folder path to watch.
+        output_dir: The directory to write output files to.
+        venv_paths: Optional list of paths from local venv to add to sys.path.
     """
     folder_path = Path(folder).resolve()
     output_dir_path = Path(output_dir)
@@ -92,8 +104,10 @@ def watch_command(folders: list[str]) -> int:
             file=sys.stderr,
         )
 
+    cwd = Path.cwd()
+
     # Create output directory
-    output_dir = Path.cwd() / OUTPUT_DIR_NAME
+    output_dir = cwd / OUTPUT_DIR_NAME
     output_dir.mkdir(exist_ok=True)
     print(f"Output directory: {output_dir}")
 
@@ -103,7 +117,7 @@ def watch_command(folders: list[str]) -> int:
         process = multiprocessing.Process(
             target=watch_folder,
             args=(str(folder_path), str(output_dir)),
-            name=f"{Path.cwd().name}-watcher-{folder_path.name}",
+            name=f"{cwd.name}-watcher-{folder_path.name}",
             daemon=True,
         )
         process.start()
