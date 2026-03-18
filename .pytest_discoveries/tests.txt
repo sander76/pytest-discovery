@@ -1,0 +1,4 @@
+tests/test_cli.py::test_example
+tests/test_cli.py::test_another_example
+
+2 tests collected in 0.00s
