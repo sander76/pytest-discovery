@@ -162,6 +162,7 @@ name = "pytest-discovery"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "pytest" },
     { name = "watchfiles" },
 ]
 
@@ -174,7 +175,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "watchfiles", specifier = ">=1.1.1" }]
+requires-dist = [
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "watchfiles", specifier = ">=1.1.1" },
+]
 
 [package.metadata.requires-dev]
 dev = [

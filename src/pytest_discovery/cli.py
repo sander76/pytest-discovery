@@ -3,25 +3,39 @@
 import argparse
 import multiprocessing
 import signal
-import subprocess
 import sys
 from pathlib import Path
 
-from watchfiles import watch, PythonFilter
-
+import pytest
+from watchfiles import PythonFilter, watch
 
 OUTPUT_DIR_NAME = ".pytest_discoveries"
 
 
+class TestCollectorPlugin:
+    """Pytest plugin to capture collected test items."""
+
+    def __init__(self) -> None:
+        self.collected: list[pytest.Item] = []
+
+    def pytest_collection_modifyitems(self, items: list[pytest.Item]) -> None:
+        """Hook called after collection is complete."""
+        self.collected = list(items)
+
+
 def run_pytest_collect(folder: Path, output_file: Path) -> None:
-    """Run pytest --collect-only on the folder and write output to file."""
+    """Run pytest collection on the folder and write output to file."""
+    collector = TestCollectorPlugin()
+
     try:
-        result = subprocess.run(
-            ["uv", "run", "pytest", str(folder), "--collect-only", "-q"],
-            capture_output=True,
-            text=True,
+        pytest.main(
+            [str(folder), "--collect-only", "-q"],
+            plugins=[collector],
         )
-        output_file.write_text(result.stdout + result.stderr)
+        print(f"Pytest collection on {folder}")
+        # Write node IDs, one per line
+        lines = [item.nodeid for item in collector.collected]
+        output_file.write_text("\n".join(lines) + "\n")
     except Exception as e:
         output_file.write_text(f"Error running pytest: {e}\n")
 
