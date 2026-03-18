@@ -26,6 +26,18 @@ class TestCollectorPlugin:
         self.collected = list(items)
 
 
+def collect_tests(folder: Path) -> list[str]:
+    collector = TestCollectorPlugin()
+
+    pytest.main(
+        [str(folder), "--collect-only", "-q"],
+        plugins=[collector],
+    )
+    print(f"Pytest collection on {folder}")
+    lines = [item.nodeid for item in collector.collected]
+    return lines
+
+
 def run_pytest_collect(folder: Path, output_file: Path) -> None:
     """Run pytest collection on the folder and write output to file.
 
@@ -34,18 +46,9 @@ def run_pytest_collect(folder: Path, output_file: Path) -> None:
         output_file: The file to write collected test node IDs to.
         venv_paths: Optional list of paths from local venv to add to sys.path.
     """
-    collector = TestCollectorPlugin()
-
-    try:
-        pytest.main(
-            [str(folder), "--collect-only", "-q"],
-            plugins=[collector],
-        )
-        print(f"Pytest collection on {folder}")
-        lines = [item.nodeid for item in collector.collected]
-        output_file.write_text("\n".join(lines) + "\n")
-    except Exception as e:
-        output_file.write_text(f"Error running pytest: {e}\n")
+    _logger.debug(f"collecting tests. folder={folder}")
+    lines = collect_tests(folder)
+    output_file.write_text("\n".join(lines) + "\n")
 
 
 def watch_folders(folders: list[Path], output_dir: Path, stop_event) -> None:
@@ -58,17 +61,16 @@ def watch_folders(folders: list[Path], output_dir: Path, stop_event) -> None:
         print(f"Running initial pytest collect. {folder.name}")
         run_pytest_collect(folder, output)
 
-    print("Watching for changes...")
+    _logger.info("Watching for changes...")
     for changes in watch(
         *(folders), stop_event=stop_event, watch_filter=PythonFilter()
     ):
         for change in changes:
-            _logger.debug(f"change {change}")
+            _logger.debug(f"Something changed: {change}")
             for folder in folders:
                 if str(folder) in change[1]:
+                    run_pytest_collect(folder, folder_output_mapping[folder])
                     break
-            else:
-                run_pytest_collect(folder, folder_output_mapping[folder])
     _logger.info("Stopped watching.")
 
 
@@ -102,7 +104,7 @@ def watch_command(folders: list[str]) -> int:
     # Set up signal handlers for graceful shutdown
     def signal_handler(signum: int, frame: object) -> None:
         print("\nShutting down watchers...")
-        stop_evt.set
+        stop_evt.set()
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
@@ -150,4 +152,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     sys.exit(main())

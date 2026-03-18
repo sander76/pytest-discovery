@@ -1,2 +1,3 @@
-tests/test_cli.py::test_example
-tests/test_cli.py::test_another_example
+tests/test_cli.py::test_watch_folders
+tests/test_cli.py::test_collect_tests
+tests/test_cli.py::test_one_more_test

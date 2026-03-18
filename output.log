@@ -1,0 +1,87 @@
+INFO:__main__:Output directory: /home/sander/repos/pytest-discoveries/.pytest_discoveries
+DEBUG:__main__:collecting tests. folder=tests
+INFO:__main__:Watching for changes...
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:1 change detected: {(<Change.modified: 2>, '/home/sander/repos/pytest-discoveries/tests/test_cli.py')}
+DEBUG:__main__:Something changed: (<Change.modified: 2>, '/home/sander/repos/pytest-discoveries/tests/test_cli.py')
+DEBUG:__main__:collecting tests. folder=tests
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+DEBUG:watchfiles.main:rust notify timeout, continuing
+INFO:__main__:Stopped watching.
+
+Watching for changes. Press Ctrl+C to stop.
+
+Running initial pytest collect. tests
+tests/test_cli.py::test_watch_folders
+tests/test_cli.py::test_collect_tests
+tests/test_cli.py::test_one_more_test
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1303
+  /home/sander/repos/pytest-discoveries/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1303: PytestAssertRewriteWarning: Module already imported so cannot be rewritten; anyio
+    self._mark_plugins_for_rewrite(hook, disable_autoload)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+3 tests collected in 0.00s
+Pytest collection on tests
+tests/test_cli.py::test_watch_folders
+tests/test_cli.py::test_collect_tests
+tests/test_cli.py::test_one_more_test
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1303
+  /home/sander/repos/pytest-discoveries/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1303: PytestAssertRewriteWarning: Module already imported so cannot be rewritten; anyio
+    self._mark_plugins_for_rewrite(hook, disable_autoload)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+3 tests collected in 0.00s
+Pytest collection on tests
+
+Shutting down watchers...

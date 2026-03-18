@@ -8,4 +8,4 @@ enter = [
 ]
 
 [shell_alias]
-ptsd="source ~/repos/dotfiles/config/run_pytest.zsh"
+ptsd="source ~/repos/dotfiles/scripts/run_pytest.zsh"
