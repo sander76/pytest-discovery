@@ -1,16 +1,18 @@
 """CLI for pytest-discovery."""
 
 import argparse
-import multiprocessing
+import logging
 import signal
-import subprocess
 import sys
 from pathlib import Path
+from threading import Event
 
 import pytest
 from watchfiles import PythonFilter, watch
 
 OUTPUT_DIR_NAME = ".pytest_discoveries"
+
+_logger = logging.getLogger(__name__)
 
 
 class TestCollectorPlugin:
@@ -40,39 +42,37 @@ def run_pytest_collect(folder: Path, output_file: Path) -> None:
             plugins=[collector],
         )
         print(f"Pytest collection on {folder}")
-        # Write node IDs, one per line
         lines = [item.nodeid for item in collector.collected]
         output_file.write_text("\n".join(lines) + "\n")
     except Exception as e:
         output_file.write_text(f"Error running pytest: {e}\n")
 
 
-def watch_folder(folder: str, output_dir: str) -> None:
-    """Watch a folder for changes and run pytest collect on each change.
+def watch_folders(folders: list[Path], output_dir: Path, stop_event) -> None:
+    """Watch a folder for changes and run pytest collect on each change."""
 
-    This function is meant to run in a separate process.
-
-    Args:
-        folder: The folder path to watch.
-        output_dir: The directory to write output files to.
-        venv_paths: Optional list of paths from local venv to add to sys.path.
-    """
-    folder_path = Path(folder).resolve()
-    output_dir_path = Path(output_dir)
-    output_file = output_dir_path / f"{folder_path.name}.txt"
+    folder_output_mapping = {fldr: output_dir / f"{fldr.name}.txt" for fldr in folders}
 
     # Run initial pytest collect
-    print(f"[{folder_path.name}] Running initial pytest collect...")
-    run_pytest_collect(folder_path, output_file)
-    print(f"[{folder_path.name}] Output written to {output_file}")
+    for folder, output in folder_output_mapping.items():
+        print(f"Running initial pytest collect. {folder.name}")
+        run_pytest_collect(folder, output)
 
-    # Watch for changes
-    print(f"[{folder_path.name}] Watching for changes...")
-    for changes in watch(folder_path, watch_filter=PythonFilter()):
-        changed_files = [str(change[1]) for change in changes]
-        print(f"[{folder_path.name}] Detected changes: {changed_files}")
-        run_pytest_collect(folder_path, output_file)
-        print(f"[{folder_path.name}] Output updated in {output_file}")
+    print("Watching for changes...")
+    for changes in watch(
+        *(folders), stop_event=stop_event, watch_filter=PythonFilter()
+    ):
+        for change in changes:
+            _logger.debug(f"change {change}")
+            for folder in folders:
+                if str(folder) in change[1]:
+                    break
+            else:
+                run_pytest_collect(folder, folder_output_mapping[folder])
+    _logger.info("Stopped watching.")
+
+
+class CliError(Exception): ...
 
 
 def watch_command(folders: list[str]) -> int:
@@ -84,63 +84,33 @@ def watch_command(folders: list[str]) -> int:
     Returns:
         Exit code (0 for success, non-zero for error).
     """
-    # Validate that all folders exist
-    resolved_folders: list[Path] = []
-    for folder in folders:
-        folder_path = Path(folder).resolve()
-        if not folder_path.exists():
-            print(f"Error: Folder does not exist: {folder}", file=sys.stderr)
-            return 1
-        if not folder_path.is_dir():
-            print(f"Error: Not a directory: {folder}", file=sys.stderr)
-            return 1
-        resolved_folders.append(folder_path)
 
-    # Check for duplicate folder names (could cause output file collisions)
-    folder_names = [f.name for f in resolved_folders]
-    if len(folder_names) != len(set(folder_names)):
-        print(
-            "Warning: Duplicate folder names detected. Output files may be overwritten.",
-            file=sys.stderr,
-        )
+    folders_to_watch = [Path(pth) for pth in folders]
+
+    for folder in folders_to_watch:
+        if not folder.exists():
+            raise CliError(f"Folder does not exist. {folder} ")
 
     cwd = Path.cwd()
 
-    # Create output directory
     output_dir = cwd / OUTPUT_DIR_NAME
     output_dir.mkdir(exist_ok=True)
-    print(f"Output directory: {output_dir}")
+    _logger.info(f"Output directory: {output_dir}")
 
-    # Start a watcher process for each folder
-    processes: list[multiprocessing.Process] = []
-    for folder_path in resolved_folders:
-        process = multiprocessing.Process(
-            target=watch_folder,
-            args=(str(folder_path), str(output_dir)),
-            name=f"{cwd.name}-watcher-{folder_path.name}",
-            daemon=True,
-        )
-        process.start()
-        processes.append(process)
-        print(f"Started watcher for: {folder_path}")
+    stop_evt = Event()
 
     # Set up signal handlers for graceful shutdown
     def signal_handler(signum: int, frame: object) -> None:
         print("\nShutting down watchers...")
-        for proc in processes:
-            proc.terminate()
-        for proc in processes:
-            proc.join(timeout=5)
-        sys.exit(0)
+        stop_evt.set
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    # Wait for all processes (they run indefinitely until interrupted)
     print("\nWatching for changes. Press Ctrl+C to stop.\n")
     try:
-        for process in processes:
-            process.join()
+        watch_folders(folders_to_watch, output_dir, stop_evt)
+
     except KeyboardInterrupt:
         signal_handler(signal.SIGINT, None)
 

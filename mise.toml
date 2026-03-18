@@ -1,0 +1,11 @@
+[env]
+NODE_ENV = 'production'
+_.python.venv = ".venv"
+
+[hooks]
+enter = [
+    "uv pip install pytest-pudb-resurrected",
+]
+
+[shell_alias]
+ptsd="source ~/repos/dotfiles/config/run_pytest.zsh"
